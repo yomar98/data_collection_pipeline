@@ -15,6 +15,7 @@ from selenium.webdriver.chrome.options import Options
 import time
 from typing import List
 import pandas as pd
+import csv
 import urllib
 import os  
 import json
@@ -33,11 +34,20 @@ class Scraper:
         Initializes the Scraper class by launching a Chrome browser and navigating to the given URL.
 
         Args:
-            url (str): The URL to navigate to. Default is 'https://www.prodirectsport.com/rugby/'.
-        """
-        options = Options()
+            url (str): The URL to navigate to. Default is 'https://www.prodirectsport.com/rugby/'
+            --disable-dev-shm-usage #is more for using docker it stops memory sharing between the host and docker container so you'll need that later on.
+            --no-sandbox # disables some security features so it can run headless
+            --disable-gpu # just disables the graphics processor which cause issues on windows
+            user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36
+            The user agent gets sent along as additional information when you make a web request. It identifies your system, so in this case I used the user agent for my system so we kind of fool the website into thinking we aren't running it in headless.
+        """        
+        options = webdriver.ChromeOptions()
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")
+        options.add_argument("user-agent=Chrome/109.0.5414.119")
         options.add_argument('--headless')
-        driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
         self.driver.get(url)
         time.sleep(10)
 
@@ -156,10 +166,19 @@ class Scraper:
             'boot_images': images
             })
 
-        boot_info_df.to_csv
-
+        def save_to_csv(df, dcp, rugby_boots):
+            rugby_boots_file = dcp + '/' + rugby_boots + '.csv'
+            with open(rugby_boots_file, 'w', newline='') as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerows(df)
+        """
+        Save data to a csv file with the specified file path and name which in this instance is dcp and rugby boots
+        """
+        
         print(boot_info_df)
-
+        """
+        Print the Dataframe
+        """
         
 
 if __name__ == '__main__':
